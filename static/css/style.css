@@ -1,0 +1,540 @@
+:root {
+    --primary-bg: #121212;
+    --secondary-bg: #1a1b1e;
+    --card-bg: #202226;
+    --text-primary: #f3f4f6;
+    --text-secondary: #a9adb3;
+    --accent: #f59e0b;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #fbbf24;
+    --border: #2a2d32;
+    /* layout defaults used by sidebar & header */
+    --sidebar-w: 220px;
+    --header-h: 72px;
+    --content-gap: 24px;
+    --font-md: 14px;
+    --font-lg: 18px;
+    --font-xl: 22px;
+    --shadow-inset: 0 1px 0 rgba(255,255,255,0.02) inset;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Picture-2 inspired tweaks: darker theme, compact cards, highlight NIFTY */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--primary-bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-size: var(--font-md);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header Styles */
+header {
+    background-color: var(--secondary-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+header .logo h1 {
+    font-size: var(--font-xl);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.user-menu {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+/* Main Content Layout */
+.main-content {
+    position: relative;
+    flex: 1;
+    display: block;          /* decouple flex children */
+    padding: 1.5rem;
+    padding-left: calc(var(--sidebar-w) + var(--content-gap));
+    overflow-y: auto;
+}
+
+/* Sidebar flattening + fixed nav rail */
+.sidebar {
+    display: block;
+}
+
+.sidebar nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    background-color: var(--secondary-bg);
+    border-right: 1px solid var(--border);
+    padding: 1rem 12px;
+    box-shadow: var(--shadow-inset);
+    z-index: 30;
+}
+
+.sidebar nav ul {
+    padding: 8px 0;
+    list-style: none;
+    position: relative;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.sidebar nav ul li a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+.sidebar nav ul li a i {
+    width: 22px;
+    text-align: center;
+    color: #9aa4b2;
+}
+
+.sidebar nav ul li a:hover {
+    background: linear-gradient(90deg, rgba(245,158,11,0.06), transparent);
+    color: var(--text-primary);
+}
+
+.sidebar nav ul li.active a {
+    background: linear-gradient(90deg, rgba(245,158,11,0.06), transparent);
+    color: var(--text-primary);
+}
+
+.sidebar nav ul li.active::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: calc(50% - 18px);
+    height: 36px;
+    width: 4px;
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+/* Main Content Styles */
+main {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+section {
+    margin-bottom: 1.25rem;
+    background-color: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-inset);
+    border: 1px solid var(--border);
+}
+
+h2 {
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    font-size: var(--font-lg);
+    font-weight: 600;
+}
+
+/* Market Overview Cards */
+.market-overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+    /* Market summary clickable rows */
+    .market-summary-item { padding:6px 4px; border-radius:6px; }
+    .market-summary-item:hover { background: rgba(255,255,255,0.02); }
+    .market-summary-item.active-summary { background: rgba(99,110,255,0.12); outline: 1px solid rgba(99,110,255,0.18); }
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    box-shadow: var(--shadow-inset);
+    transition: transform var(--ease-fast), background var(--ease-fast), border-color var(--ease-fast);
+}
+
+.card:hover {
+    transform: translateY(-1px);
+    background-color: #23262a;
+    border-color: #34373d;
+}
+
+.card h3 {
+    font-size: var(--font-sm);
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.sentiment-indicator, .status-indicator, .nifty-change, .vix-value {
+    font-size: var(--font-lg);
+    font-weight: 600;
+}
+
+/* Market Summary / Heatmap containers */
+.chart-container, .heatmap-container {
+    width: 100%;
+    height: 420px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 8px;
+}
+
+/* Sector chart full-width and height */
+.sectors-movement { padding: 0.75rem; }
+#sectors-chart { width: 100%; height: 420px; }
+
+/* Two-column layout for sector area: left small bar, right rotation timeseries */
+.sectors-row { display:flex; gap:1rem; align-items:flex-start; }
+.sectors-left { flex: 0 0 38%; min-width: 280px; }
+.sectors-right { flex: 1 1 62%; }
+#sectors-rotation { width: 100%; height: 420px; }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--font-md);
+}
+
+th {
+    background-color: #23262a;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+tr:hover td {
+    background: #1d2024;
+}
+
+/* Market tables specific tweaks to match screenshot style */
+.market-table thead th { text-transform: uppercase; font-size: 13px; letter-spacing: 0.6px; }
+.market-table tbody td { font-weight: 600; color: var(--text-primary); }
+.market-table tbody td.cell-symbol { font-weight: 700; }
+.table-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 480px;
+    width: 100%;
+}
+.table-footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+.table-info { color: var(--text-secondary); font-size: 13px; }
+.pager { display:flex; gap:8px; align-items:center; }
+.pager-btn { background:#111214; border:1px solid var(--border); color:var(--text-primary); padding:6px 10px; border-radius:6px; cursor:pointer; }
+.pager-btn.active { background: #2f3338; border-color: #3f454b; font-weight:700; }
+.pager-btn:disabled { opacity:0.45; cursor:default; }
+
+/* Insider / Congress panels */
+.insider-row { display:flex; gap:1rem; align-items:flex-start; }
+.insider-left, .insider-right { flex: 1 1 50%; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); }
+.insider-left h3, .insider-right h3 { margin-top: 0; margin-bottom: 8px; }
+
+/* small badge for buy/sell */
+.badge { display:inline-block; padding:6px 10px; border-radius:8px; font-weight:700; color:#fff; font-size:13px; }
+.badge.buy { background: #0f5132; color: #15d89a; }
+.badge.sell { background: #3a0b0b; color: #ff7b7b; }
+
+/* Insider table specifics */
+#insider-transactions-table th, #congress-trades-table th { text-transform:uppercase; font-size:13px; }
+#insider-transactions-table td, #congress-trades-table td { font-weight:600; }
+#sectors-chart, #sectors-rotation { max-width: 100%; }
+
+/* Columns Layout */
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
+/* Form & Button styling */
+input, select, textarea {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: border-color var(--ease-fast), background var(--ease-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #34373d;
+    background: #23262a;
+}
+
+button {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: var(--font-md);
+    cursor: pointer;
+    transition: background var(--ease-fast), border-color var(--ease-fast), transform var(--ease-fast);
+}
+
+button:hover {
+    background: #23262a;
+    border-color: #34373d;
+    transform: translateY(-1px);
+}
+
+/* Color indicators */
+.bullish { color: var(--green); }
+.bearish { color: var(--red); }
+.neutral { color: var(--yellow); }
+.positive-change { color: var(--green); }
+.negative-change { color: var(--red); }
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+    .market-overview { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+    .columns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1024px) {
+    .market-overview { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+    .main-content { padding-left: calc(0.5rem + var(--content-gap)); }
+    .sidebar nav {
+        position: sticky; /* collapse into top area */
+        top: 0;
+        width: auto;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    .sidebar nav ul {
+        display: flex;
+        overflow-x: auto;
+        gap: 0.5rem;
+        padding: 0 0.75rem;
+    }
+    .sidebar nav ul li { margin-bottom: 0; }
+}
+
+@media (max-width: 768px) {
+    .market-overview { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+    :root { --font-md: 13px; --font-lg: 15px; }
+}
+
+@media (max-width: 640px) {
+    .market-overview { grid-template-columns: 1fr; }
+    :root { --font-md: 12px; --font-lg: 14px; }
+    section { padding: 0.9rem 1rem; }
+}
+
+.active-stocks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.active-stocks .gainers,
+.active-stocks .losers { width: 100%;
+    min-width: 0; /* IMPORTANT */
+}
+
+/* Time Series Analysis & Sector Analytics Styles */
+.time-series-header,
+.sector-analytics-header {
+    margin-bottom: 2rem;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 0.5rem;
+}
+
+.selector-section {
+    margin-bottom: 1.5rem;
+}
+
+.selector-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.selector-container select {
+    padding: 10px 15px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.action-button {
+    padding: 10px 20px;
+    background: var(--accent);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.action-button:hover {
+    background: #d97706;
+}
+
+.analysis-section {
+    margin-bottom: 2rem;
+}
+
+.placeholder-content {
+    color: var(--text-secondary);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.model-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.model-card h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.model-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.controls select,
+.controls input {
+    padding: 8px 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+/* Chart container fixes */
+[id$="-chart"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden;
+    position: relative;
+}
+
+[id$="-chart"] .js-plotly-plot {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Ensure Plotly charts are responsive */
+.plotly {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.plot-container {
+    width: 100% !important;
+    height: 100% !important;
+}

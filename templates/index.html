@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Dashboard - Tradytics Clone</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Market Dashboard</h1>
+            </div>
+            <div class="user-menu">
+                <span>Tradytics Clone</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sidebar">
+                <!-- Sidebar navigation -->
+                <nav>
+                    <ul>
+                        <!-- Picture-2 style labels while keeping structure -->
+                        <li class="active"><a href="/"><i class="fas fa-chart-line"></i> Market</a></li>
+                        <li><a href="/time_series_analysis"><i class="fas fa-wave-square"></i> Time Series Analysis</a></li>
+                        <li><a href="/sector_analytics"><i class="fas fa-chart-pie"></i> Sector Analytics</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main>
+                <!-- Market overview cards: switch SPY/VIX to NIFTY/India VIX -->
+                <section class="market-overview">
+                    <div class="card sentiment">
+                        <h3>Market Sentiment</h3>
+                        <div class="sentiment-indicator">
+                            <span id="sentiment-value">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card market-status">
+                        <h3>Market Status</h3>
+                        <div class="status-indicator">
+                            <span id="market-status">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card nifty">
+                        <h3>NIFTY 50</h3>
+                        <div class="nifty-change">
+                            <span id="nifty-change">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card indiavix">
+                        <h3>India VIX</h3>
+                        <div class="vix-value">
+                            <span id="india-vix-value">Loading...</span>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- MAIN PANEL: left market summary list + right large chart (Picture-2 style) -->
+                <section class="main-panel" style="display:block; margin-bottom:1rem;">
+                    <div style="display:flex; gap:16px; align-items:flex-start;">
+                        <div style="width:320px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px;">
+                            <h2 style="margin-top:0;">Market Summary</h2>
+                            <div id="market-summary-list" style="display:grid; grid-template-columns:1fr 1fr 80px; gap:10px; align-items:center;">
+                                <!-- Filled by JS -->
+                                <div style="grid-column:1/-1; color:var(--text-secondary);">Loading...</div>
+                            </div>
+                        </div>
+
+                        <div style="flex:1; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <div>
+                                    <div id="main-ticker" style="font-size:28px; font-weight:800;">NIFTY</div>
+                                    <div style="color:var(--text-secondary); font-size:14px;">Live Price <span id="main-price" style="font-weight:700; margin-left:8px;">--</span></div>
+                                </div>
+                                <div style="color:var(--text-secondary);">&nbsp;</div>
+                            </div>
+                            
+                            <div id="main-chart" style="height:420px;"></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="market-heatmap">
+                    <h2>Market Heatmap</h2>
+                    <div class="heatmap-container">
+                        <div id="heatmap"></div>
+                    </div>
+                </section>
+                
+                    <section class="active-stocks">
+                        <div class="gainers">
+                            <h2>Top Gainers</h2>
+                            <div class="table-wrap">
+                                <table id="gainers-table" class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>TICKER</th>
+                                            <th>PRICE</th>
+                                            <th>CHANGE</th>
+                                            <th>VOL</th>
+                                            <th>RVOL</th>
+                                            <th>FLOAT</th>
+                                            <th>MCAP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="7">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer">
+                                <div id="gainers-info" class="table-info">Showing 0 to 0 of 0 entries</div>
+                                <div id="gainers-pager" class="pager"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="losers">
+                            <h2>Top Losers</h2>
+                            <div class="table-wrap">
+                                <table id="losers-table" class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>TICKER</th>
+                                            <th>PRICE</th>
+                                            <th>CHANGE</th>
+                                            <th>VOL</th>
+                                            <th>RVOL</th>
+                                            <th>FLOAT</th>
+                                            <th>MCAP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="7">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer">
+                                <div id="losers-info" class="table-info">Showing 0 to 0 of 0 entries</div>
+                                <div id="losers-pager" class="pager"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                <!-- Move Sector Performance below the tables so it spans full width -->
+                <section class="sectors-movement">
+                    <h2>Sector Performance</h2>
+                    <div class="sectors-row">
+                        <div class="sectors-left">
+                            <div id="sectors-chart"></div>
+                        </div>
+                        <div class="sectors-right">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <h3 style="margin:0;">Sector Rotations</h3>
+                                <div style="color:var(--text-secondary);font-size:13px;">&nbsp;</div>
+                            </div>
+                            <div id="sectors-rotation"></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="congress-insiders">
+                    <h2>Congress & Insider Trades</h2>
+                    <div class="insider-row">
+                        <div class="insider-left card">
+                            <h3>Insider Transactions</h3>
+                            <div class="table-wrap">
+                                <table id="insider-transactions-table" class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>FILEDAT</th>
+                                            <th>TICKER</th>
+                                            <th>BUY/SELL</th>
+                                            <th>SHARES</th>
+                                            <th>AMOUNT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="5">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer">
+                                <div id="insider-info" class="table-info">Showing 0 to 0 of 0 entries</div>
+                                <div id="insider-pager" class="pager"></div>
+                            </div>
+                        </div>
+
+                        <div class="insider-right card">
+                            <h3>Congress Trades</h3>
+                            <div class="table-wrap">
+                                <table id="congress-trades-table" class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>DATE</th>
+                                            <th>SYMBOL</th>
+                                            <th>AMOUNT</th>
+                                            <th>REPRESENTATIVE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="4">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer">
+                                <div id="congress-info" class="table-info">Showing 0 to 0 of 0 entries</div>
+                                <div id="congress-pager" class="pager"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

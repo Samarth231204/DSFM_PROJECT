@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Stock Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/predictor_style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-chart-line"></i> Indian Stock Predictor</h1>
+                <p>AI-Powered Stock Price Prediction with Sentiment Analysis</p>
+            </div>
+        </header>
+        
+        <main>
+            <section class="stock-selector">
+                <h2>Select Stock for Prediction</h2>
+                <div class="selector-container">
+                    <select id="stock-select">
+                        <option value="">Choose a stock...</option>
+                    </select>
+                    <select id="prediction-days">
+                        <option value="7">7 Days</option>
+                        <option value="14">14 Days</option>
+                        <option value="21">21 Days</option>
+                        <option value="30">30 Days</option>
+                    </select>
+                    <button id="predict-btn" class="predict-button">
+                        <i class="fas fa-brain"></i> Predict
+                    </button>
+                </div>
+            </section>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing stock data and generating predictions...</p>
+            </div>
+            
+            <div id="results" class="results" style="display: none;">
+                <section class="stock-info">
+                    <h2>Stock Information</h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3>Current Price</h3>
+                            <p id="current-price" class="price">-</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>30-Day Performance</h3>
+                            <p id="30day-performance" class="performance">-</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Market Sentiment</h3>
+                            <p id="market-sentiment" class="sentiment">-</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Prediction Confidence</h3>
+                            <p id="prediction-confidence" class="confidence">-</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="prediction-chart">
+                    <h2>Price Predictions</h2>
+                    <div id="prediction-chart"></div>
+                </section>
+                
+                <section class="prediction-table">
+                    <h2>Detailed Predictions</h2>
+                    <table id="predictions-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Predicted Price</th>
+                                <th>Change (%)</th>
+                                <th>Confidence</th>
+                                <th>Range</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </section>
+                
+                <section class="model-metrics">
+                    <h2>Model Performance</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <h3>Mean Squared Error</h3>
+                            <p id="mse">-</p>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Mean Absolute Error</h3>
+                            <p id="mae">-</p>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Root Mean Square Error</h3>
+                            <p id="rmse">-</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="error" class="error" style="display: none;">
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p id="error-text"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/predictor.js') }}"></script>
+</body>
+</html>

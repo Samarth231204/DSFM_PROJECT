@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Analytics - Market Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Market Dashboard</h1>
+            </div>
+            <div class="user-menu">
+                <span>Tradytics Clone</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-chart-line"></i> Market</a></li>
+                        <li><a href="/time_series_analysis"><i class="fas fa-wave-square"></i> Time Series Analysis</a></li>
+                        <li class="active"><a href="/sector_analytics"><i class="fas fa-chart-pie"></i> Sector Analytics</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main>
+                <section class="sector-analytics-header">
+                    <h1>Sector Analytics</h1>
+                    <p class="subtitle">Sector-level and cross-sectional analysis with returns, volatility, correlations, PCA, clustering, and RMT insights</p>
+                </section>
+
+                <!-- Sector Returns Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-bar"></i> Sector Returns Analysis</h2>
+                        <div class="placeholder-content">
+                            <p>Comprehensive sector returns analysis with performance metrics.</p>
+                            <div id="sector-returns-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                                <label>
+                                    Period:
+                                    <select id="returns-period">
+                                        <option value="1d">1 Day</option>
+                                        <option value="1w">1 Week</option>
+                                        <option value="1m" selected>1 Month</option>
+                                        <option value="3m">3 Months</option>
+                                        <option value="1y">1 Year</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Metric:
+                                    <select id="returns-metric">
+                                        <option value="total">Total Return</option>
+                                        <option value="avg">Average Return</option>
+                                        <option value="vol">Volatility</option>
+                                        <option value="sharpe">Sharpe Ratio</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sector Volatility Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-area"></i> Sector Volatility Analysis</h2>
+                        <div class="placeholder-content">
+                            <p>Volatility analysis across different sectors with rolling volatility measures.</p>
+                            <div id="sector-volatility-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
+                                <div class="stat-card">
+                                    <div class="stat-label">Highest Volatility</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Lowest Volatility</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Avg Volatility</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Volatility Spread</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Correlation Matrix Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-project-diagram"></i> Sector Correlation Matrix</h2>
+                        <div class="placeholder-content">
+                            <p>Cross-sector correlation analysis to identify relationships and diversification opportunities.</p>
+                            <div id="correlation-matrix-chart" style="height: 500px; width: 100%; min-height: 500px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="controls" style="margin-top: 1rem;">
+                                <label>
+                                    Correlation Method:
+                                    <select id="correlation-method">
+                                        <option value="pearson" selected>Pearson</option>
+                                        <option value="spearman">Spearman</option>
+                                        <option value="kendall">Kendall</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PCA Analysis Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-cube"></i> Principal Component Analysis (PCA)</h2>
+                        <div class="placeholder-content">
+                            <p>Dimensionality reduction and principal component analysis of sector returns.</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <div id="pca-scatter-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div id="pca-variance-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                                    </div>
+                                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                                        <div class="stat-card">
+                                            <div class="stat-label">PC1 Explained Variance</div>
+                                            <div class="stat-value">--</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <div class="stat-label">PC2 Explained Variance</div>
+                                            <div class="stat-value">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clustering Analysis Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-sitemap"></i> Sector Clustering</h2>
+                        <div class="placeholder-content">
+                            <p>Unsupervised learning to identify sector clusters based on return patterns.</p>
+                            <div id="clustering-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                                <label>
+                                    Algorithm:
+                                    <select id="clustering-algorithm">
+                                        <option value="kmeans" selected>K-Means</option>
+                                        <option value="hierarchical">Hierarchical</option>
+                                        <option value="dbscan">DBSCAN</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Number of Clusters:
+                                    <input type="number" id="n-clusters" value="3" min="2" max="10">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Random Matrix Theory (RMT) Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-atom"></i> Random Matrix Theory (RMT) Analysis</h2>
+                        <div class="placeholder-content">
+                            <p>RMT-based insights to filter noise and identify genuine correlations in sector data.</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <div id="rmt-eigenvalue-chart" style="height: 350px; width: 100%; min-height: 350px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div id="rmt-insights" style="height: 350px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; color: var(--text-secondary); overflow-y: auto;">
+                                        <h3 style="margin-top: 0;">RMT Insights</h3>
+                                        <ul style="list-style: none; padding: 0;">
+                                            <li style="margin-bottom: 0.5rem;">• Noise Threshold: --</li>
+                                            <li style="margin-bottom: 0.5rem;">• Significant Eigenvalues: --</li>
+                                            <li style="margin-bottom: 0.5rem;">• Market Mode: --</li>
+                                            <li style="margin-bottom: 0.5rem;">• Sector Modes: --</li>
+                                            <li style="margin-bottom: 0.5rem;">• Filtered Correlations: --</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Raw Correlation Matrix</h4>
+                                    <div id="rmt-raw-correlation-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Denoised Correlation Matrix</h4>
+                                    <div id="rmt-denoised-correlation-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sector Sentiment Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-smile"></i> Sector Sentiment Analysis</h2>
+                        <div class="placeholder-content">
+                            <p>Sentiment analysis per sector over time, compared with sector returns.</p>
+                            <div id="sector-sentiment-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sector Rotation Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-sync-alt"></i> Sector Rotation</h2>
+                        <div class="placeholder-content">
+                            <p>Identify sectors moving between performance quartiles and rotation patterns.</p>
+                            <div id="sector-rotation-display" style="min-height: 200px; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading rotation data...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sector Insights Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-lightbulb"></i> Sector Insights</h2>
+                        <div class="placeholder-content">
+                            <p>High-level insights combining all sector analytics.</p>
+                            <div id="sector-insights-display" style="min-height: 200px; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading insights...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cross-Sectional Analysis Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-crosshairs"></i> Cross-Sectional Analysis</h2>
+                        <div class="placeholder-content">
+                            <p>Cross-sectional factor analysis and sector comparison metrics.</p>
+                            <div id="cross-sectional-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="table-wrap" style="margin-top: 1rem;">
+                                <table class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sector</th>
+                                            <th>Return</th>
+                                            <th>Volatility</th>
+                                            <th>Sharpe Ratio</th>
+                                            <th>Beta</th>
+                                            <th>Alpha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Data will be loaded here</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/sector_analytics.js') }}"></script>
+</body>
+</html>
+

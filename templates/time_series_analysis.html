@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Series Analysis - Market Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Market Dashboard</h1>
+            </div>
+            <div class="user-menu">
+                <span>Tradytics Clone</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-chart-line"></i> Market</a></li>
+                        <li class="active"><a href="/time_series_analysis"><i class="fas fa-wave-square"></i> Time Series Analysis</a></li>
+                        <li><a href="/sector_analytics"><i class="fas fa-chart-pie"></i> Sector Analytics</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main>
+                <section class="time-series-header">
+                    <h1>Time Series Analysis</h1>
+                    <p class="subtitle">Index and stock-level temporal modeling with ARIMA, GARCH, and rolling statistics</p>
+                </section>
+
+                <!-- Stock/Index Selector -->
+                <section class="selector-section">
+                    <div class="card">
+                        <h3>Select Stock/Index</h3>
+                        <div class="selector-container">
+                            <select id="ts-ticker-select">
+                                <option value="^NSEI">NIFTY 50</option>
+                                <option value="RELIANCE.NS">RELIANCE</option>
+                                <option value="TCS.NS">TCS</option>
+                                <option value="HDFCBANK.NS">HDFC Bank</option>
+                                <option value="INFY.NS">Infosys</option>
+                            </select>
+                            <select id="ts-period-select">
+                                <option value="1mo">1 Month</option>
+                                <option value="3mo">3 Months</option>
+                                <option value="6mo" selected>6 Months</option>
+                                <option value="1y">1 Year</option>
+                                <option value="2y">2 Years</option>
+                            </select>
+                            <button id="ts-analyze-btn" class="action-button">
+                                <i class="fas fa-chart-line"></i> Analyze
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ARIMA Model Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-project-diagram"></i> ARIMA Model</h2>
+                        <div class="placeholder-content">
+                            <p>ARIMA (AutoRegressive Integrated Moving Average) model analysis will be displayed here.</p>
+                            <div id="arima-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                                <div class="stat-card">
+                                    <div class="stat-label">AIC</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">BIC</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">RMSE</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- GARCH Model Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-area"></i> GARCH Model</h2>
+                        <div class="placeholder-content">
+                            <p>GARCH (Generalized Autoregressive Conditional Heteroskedasticity) volatility modeling will be displayed here.</p>
+                            <div id="garch-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                                <div class="stat-card">
+                                    <div class="stat-label">Alpha</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Beta</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Omega</div>
+                                    <div class="stat-value">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Rolling Statistics Section -->
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-sliders-h"></i> Rolling Statistics</h2>
+                        <div class="placeholder-content">
+                            <p>Rolling mean, volatility, and other statistical measures will be displayed here.</p>
+                            <div id="rolling-stats-chart" style="height: 400px; width: 100%; min-height: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">Loading chart...</div>
+                            </div>
+                            <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                                <label>
+                                    Window Size:
+                                    <select id="rolling-window">
+                                        <option value="5">5 days</option>
+                                        <option value="10">10 days</option>
+                                        <option value="20" selected>20 days</option>
+                                        <option value="30">30 days</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Metric:
+                                    <select id="rolling-metric">
+                                        <option value="mean">Mean</option>
+                                        <option value="std">Standard Deviation</option>
+                                        <option value="var">Variance</option>
+                                        <option value="skew">Skewness</option>
+                                        <option value="kurt">Kurtosis</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/time_series.js') }}"></script>
+</body>
+</html>
+
