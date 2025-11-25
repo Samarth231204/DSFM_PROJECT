@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volatility Ranking - Market Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Market Dashboard</h1>
+            </div>
+            <div class="user-menu">
+                <span>Tradytics Clone</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-chart-line"></i> Market</a></li>
+                        <li><a href="/time_series_analysis"><i class="fas fa-wave-square"></i> Time Series Analysis</a></li>
+                        <li><a href="/sector_analytics"><i class="fas fa-chart-pie"></i> Sector Analytics</a></li>
+                        <li class="active"><a href="/volatility_ranking"><i class="fas fa-chart-area"></i> Volatility Ranking</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main>
+                <section class="sector-analytics-header">
+                    <h1>NIFTY-50 Volatility Ranking</h1>
+                    <p class="subtitle">Top 5 most volatile and least volatile stocks based on annualized volatility</p>
+                </section>
+
+                <div class="controls" style="margin: 1rem 0; display: flex; gap: 1rem; align-items: center;">
+                    <label>
+                        Period:
+                        <select id="volatility-period" style="padding: 8px; border-radius: 6px; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-primary);">
+                            <option value="1mo">1 Month</option>
+                            <option value="3mo" selected>3 Months</option>
+                            <option value="6mo">6 Months</option>
+                            <option value="1y">1 Year</option>
+                        </select>
+                    </label>
+                </div>
+
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-arrow-up"></i> Top 5 Most Volatile Stocks</h2>
+                        <div id="most-volatile-table" style="margin-top: 1rem;">
+                            <div style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="analysis-section">
+                    <div class="card">
+                        <h2><i class="fas fa-arrow-down"></i> Top 5 Least Volatile Stocks</h2>
+                        <div id="least-volatile-table" style="margin-top: 1rem;">
+                            <div style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading...</div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/volatility_ranking.js') }}"></script>
+</body>
+</html>
+

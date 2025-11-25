@@ -165,53 +165,28 @@
                     </div>
                 </section>
                 
-                <section class="congress-insiders">
-                    <h2>Congress & Insider Trades</h2>
+                <!-- Sector Sentiment Snapshot & Market Risk Radar -->
+                <section class="sentiment-risk-snapshot">
                     <div class="insider-row">
                         <div class="insider-left card">
-                            <h3>Insider Transactions</h3>
-                            <div class="table-wrap">
-                                <table id="insider-transactions-table" class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>FILEDAT</th>
-                                            <th>TICKER</th>
-                                            <th>BUY/SELL</th>
-                                            <th>SHARES</th>
-                                            <th>AMOUNT</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td colspan="5">Loading...</td></tr>
-                                    </tbody>
-                                </table>
+                            <h3>Sector Sentiment Snapshot</h3>
+                            <div id="sector-sentiment-snapshot">
+                                <div style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading...</div>
                             </div>
-                            <div class="table-footer">
-                                <div id="insider-info" class="table-info">Showing 0 to 0 of 0 entries</div>
-                                <div id="insider-pager" class="pager"></div>
+                            <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); text-align: center;">
+                                <span id="sentiment-last-updated">Last updated: --</span>
+                                <br>
+                                <a href="/sector_analytics" style="color: var(--primary); text-decoration: none; margin-top: 4px; display: inline-block;">View detailed sentiment analytics →</a>
                             </div>
                         </div>
 
                         <div class="insider-right card">
-                            <h3>Congress Trades</h3>
-                            <div class="table-wrap">
-                                <table id="congress-trades-table" class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>DATE</th>
-                                            <th>SYMBOL</th>
-                                            <th>AMOUNT</th>
-                                            <th>REPRESENTATIVE</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td colspan="4">Loading...</td></tr>
-                                    </tbody>
-                                </table>
+                            <h3>Market Risk Radar</h3>
+                            <div id="market-risk-radar" style="width: 100%; height: 300px; min-height: 300px;">
+                                <div style="padding: 20px; text-align: center; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; height: 100%;">Loading...</div>
                             </div>
-                            <div class="table-footer">
-                                <div id="congress-info" class="table-info">Showing 0 to 0 of 0 entries</div>
-                                <div id="congress-pager" class="pager"></div>
+                            <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); text-align: center;">
+                                <span id="volatility-last-updated">Last updated: --</span>
                             </div>
                         </div>
                     </div>

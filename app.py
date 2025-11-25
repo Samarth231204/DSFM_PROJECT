@@ -205,6 +205,10 @@ def time_series_analysis():
 def sector_analytics():
     return render_template('sector_analytics.html')
 
+@app.route('/volatility_ranking')
+def volatility_ranking():
+    return render_template('volatility_ranking.html')
+
 # Flask route: market_summary — switch to NIFTY 50 (^NSEI) and India VIX (^INDIAVIX)
 @app.route('/api/market_summary')
 def market_summary():
@@ -373,7 +377,7 @@ def gainers_losers():
                             else:
                                 losers_list.append(record)
                 except Exception as e:
-                    print(f"Error processing batch {i}: {e}")
+                    logger.warning(f"Error processing batch {i}: {e}")
                     continue
         except Exception as e:
             print(f"Error fetching Indian gainers/losers from yfinance: {e}")
@@ -555,55 +559,156 @@ def sector_performance():
         return {'sectors': sectors_data}
     return jsonify(get_cached_data('sector_performance', fetch_data))
 
-@app.route('/api/insider_trades')
-def insider_trades():
-    # For insider trades, we'll use mock data as this typically requires
-    # specialized data sources or scraping
+@app.route('/api/market_volatility_snapshot')
+def market_volatility_snapshot():
+    """
+    Get current market volatility snapshot for NIFTY-50 index.
+    Returns annualized volatility and risk level classification.
+    """
     def fetch_data():
-        # Create mock insider transactions focused on Indian tickers
-        symbols = [
-            'RELIANCE.NS','TCS.NS','HDFCBANK.NS','INFY.NS','ITC.NS','SBIN.NS','ICICIBANK.NS','LT.NS',
-            'HINDUNILVR.NS','AXISBANK.NS','ASIANPAINT.NS','MARUTI.NS','BAJFINANCE.NS','WIPRO.NS'
-        ]
-        rows = []
-        now = datetime.now()
-        for i in range(30):
-            sym = random.choice(symbols)
-            side = random.choice(['Buy','Sell'])
-            shares = random.choice([round(random.uniform(10,1000),2), f"{random.randint(1,999)}K"]) if random.random()>0.3 else f"{random.randint(1,5000)}"
-            amount = f"₹{int(random.uniform(1e5,5e7)):,}"
-            rows.append({
-                'filedAt': (now - timedelta(days=random.randint(1,40))).strftime('%Y-%m-%d'),
-                'ticker': sym,
-                'action': side,
-                'shares': shares,
-                'amount': amount
-            })
-        return {'trades': rows}
+        try:
+            logger.info("Fetching market volatility snapshot")
+            
+            # Fetch NIFTY-50 index data
+            nifty = yf.Ticker("^NSEI")
+            hist = nifty.history(period="3mo")  # Use 3 months for better volatility estimate
+            
+            if hist.empty or 'Close' not in hist.columns:
+                logger.warning("No data available for NIFTY index")
+                return {
+                    'status': 'error',
+                    'message': 'Unable to fetch market data',
+                    'annualized_volatility': 0.0,
+                    'risk_level': 'Unknown'
+                }
+            
+            # Calculate log returns
+            prices = hist['Close'].dropna()
+            if len(prices) < 20:
+                logger.warning("Insufficient data points for volatility calculation")
+                return {
+                    'status': 'error',
+                    'message': 'Insufficient data',
+                    'annualized_volatility': 0.0,
+                    'risk_level': 'Unknown'
+                }
+            
+            returns = np.log(prices / prices.shift(1)).dropna()
+            
+            # Calculate annualized volatility (assuming 252 trading days)
+            daily_volatility = returns.std()
+            annualized_volatility = daily_volatility * np.sqrt(252)
+            
+            # Determine risk level
+            if annualized_volatility < 0.10:
+                risk_level = 'Low'
+            elif annualized_volatility < 0.20:
+                risk_level = 'Moderate'
+            else:
+                risk_level = 'High'
+            
+            logger.info(f"Market volatility snapshot: {annualized_volatility:.4f} ({risk_level})")
+            
+            return {
+                'status': 'success',
+                'annualized_volatility': float(annualized_volatility),
+                'risk_level': risk_level,
+                'daily_volatility': float(daily_volatility),
+                'period': '3mo',
+                'data_points': len(returns)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in market volatility snapshot: {str(e)}", exc_info=True)
+            return {
+                'status': 'error',
+                'message': f'Error calculating volatility: {str(e)}',
+                'annualized_volatility': 0.0,
+                'risk_level': 'Unknown'
+            }
     
-    return jsonify(get_cached_data('insider_trades', fetch_data))
+    return jsonify(get_cached_data('market_volatility_snapshot', fetch_data))
 
-
-
-@app.route('/api/congress_trades')
-def congress_trades():
-    # Mock congress-style trades mapped to Indian tickers (representative field included)
+@app.route('/api/volatility_ranking')
+def volatility_ranking_api():
+    """
+    Get top 5 most volatile and least volatile stocks from NIFTY-50.
+    """
+    from flask import request
+    raw_period = request.args.get('period', '3mo')
+    period = normalize_period(raw_period, default='3mo')
+    
+    logger.info(f"Volatility ranking request: raw_period={raw_period}, period={period}")
+    
     def fetch_data():
-        reps = ['Rajya Member A','Rajya Member B','MP C','MP D','Representative E']
-        symbols = ['RELIANCE.NS','TCS.NS','INFY.NS','HDFCBANK.NS','ITC.NS','LT.NS','ICICIBANK.NS']
-        rows = []
-        now = datetime.now()
-        for i in range(30):
-            rows.append({
-                'date': (now - timedelta(days=random.randint(1,45))).strftime('%Y-%m-%d'),
-                'symbol': random.choice(symbols),
-                'amount': f"{random.randint(1,500)}.0K",
-                'representative': random.choice(reps)
-            })
-        return {'trades': rows}
+        try:
+            sector_map = get_nifty50_sector_mapping()
+            nifty50_symbols = [s.lstrip('$') for s in list(sector_map.keys())]
+            
+            stock_volatilities = []
+            
+            logger.info(f"Calculating volatility for {len(nifty50_symbols)} NIFTY-50 stocks")
+            
+            for symbol in nifty50_symbols:
+                try:
+                    clean_symbol = symbol.lstrip('$')
+                    stock = yf.Ticker(clean_symbol)
+                    hist = stock.history(period=period)
+                    
+                    if not hist.empty and 'Close' in hist.columns:
+                        prices = hist['Close'].dropna()
+                        if len(prices) > 20:
+                            returns = np.log(prices / prices.shift(1)).dropna()
+                            if len(returns) > 10:
+                                daily_vol = returns.std()
+                                annualized_vol = daily_vol * np.sqrt(252)
+                                
+                                stock_volatilities.append({
+                                    'symbol': clean_symbol.replace('.NS', ''),
+                                    'full_symbol': clean_symbol,
+                                    'volatility': float(annualized_vol),
+                                    'volatility_percent': float(annualized_vol * 100),
+                                    'sector': sector_map.get(clean_symbol, sector_map.get(f'${clean_symbol}', 'Unknown'))
+                                })
+                except Exception as e:
+                    logger.debug(f"Error calculating volatility for {symbol}: {e}")
+                    continue
+            
+            if len(stock_volatilities) < 5:
+                logger.warning(f"Only {len(stock_volatilities)} stocks with valid volatility data")
+                return {
+                    'status': 'error',
+                    'message': 'Insufficient data for ranking',
+                    'most_volatile': [],
+                    'least_volatile': []
+                }
+            
+            # Sort by volatility
+            sorted_stocks = sorted(stock_volatilities, key=lambda x: x['volatility'], reverse=True)
+            
+            most_volatile = sorted_stocks[:5]
+            least_volatile = sorted_stocks[-5:][::-1]  # Reverse to show lowest first
+            
+            logger.info(f"Volatility ranking completed: {len(stock_volatilities)} stocks analyzed")
+            
+            return {
+                'status': 'success',
+                'period': period,
+                'most_volatile': most_volatile,
+                'least_volatile': least_volatile,
+                'total_stocks': len(stock_volatilities)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in volatility ranking: {str(e)}", exc_info=True)
+            return {
+                'status': 'error',
+                'message': f'Error calculating volatility ranking: {str(e)}',
+                'most_volatile': [],
+                'least_volatile': []
+            }
 
-    return jsonify(get_cached_data('congress_trades', fetch_data))
-
+    return jsonify(get_cached_data(f'volatility_ranking_{period}', fetch_data))
 
 @app.route('/api/sector_rotations')
 def sector_rotations():

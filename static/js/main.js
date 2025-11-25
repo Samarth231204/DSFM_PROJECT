@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchHeatmap();
     fetchSectorPerformance();
     fetchSectorRotations();
-    fetchInsiderTrades();
-    fetchCongressTrades();
+    fetchSectorSentimentSnapshot();
+    fetchMarketRiskRadar();
     // Main chart: default Indian stock
     fetchStockHistory('RELIANCE.NS', '1mo');
     
@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchHeatmap();
         fetchSectorPerformance();
         fetchSectorRotations();
-    fetchInsiderTrades();
-    fetchCongressTrades();
+        fetchSectorSentimentSnapshot();
+        fetchMarketRiskRadar();
     }, 300000); // 5 minutes
     
     // Handle window resize for all charts
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function() {
-            const charts = ['main-chart', 'nifty-chart', 'heatmap', 'sectors-chart', 'sectors-rotation'];
+            const charts = ['main-chart', 'nifty-chart', 'heatmap', 'sectors-chart', 'sectors-rotation', 'market-risk-radar'];
             charts.forEach(chartId => {
                 const chartDiv = document.getElementById(chartId);
                 if (chartDiv && (chartDiv.data || chartDiv._fullLayout)) {
@@ -631,95 +631,268 @@ function renderSectorPerformance(sectors) {
     }, 100);
 }
 
-// Fetch insider trades data
-function fetchInsiderTrades() {
-    fetch('/api/insider_trades')
+// Fetch Sector Sentiment Snapshot
+function fetchSectorSentimentSnapshot() {
+    fetch('/api/sector_analytics/sentiment?period=1y')
         .then(response => response.json())
         .then(data => {
-            // Expect data.trades as array of insider transactions
-            updateInsiderTransactionsTable(data.trades || []);
+            console.log('Sector sentiment snapshot data:', data);
+            if (data.sector_sentiment && Object.keys(data.sector_sentiment).length > 0) {
+                renderSectorSentimentSnapshot(data);
+                const now = new Date();
+                document.getElementById('sentiment-last-updated').textContent = 
+                    `Last updated: ${now.toLocaleString()}`;
+                console.log('Rendered Sector Sentiment Snapshot successfully');
+            } else {
+                showSentimentError('Data unavailable. Try again later.');
+            }
         })
         .catch(error => {
-            console.error('Error fetching insider trades:', error);
+            console.error('Error fetching sector sentiment snapshot:', error);
+            showSentimentError('Data unavailable. Try again later.');
         });
 }
 
-// Fetch congress trades separately
-function fetchCongressTrades() {
-    fetch('/api/congress_trades')
-        .then(r => r.json())
+// Render Sector Sentiment Snapshot
+function renderSectorSentimentSnapshot(data) {
+    const container = document.getElementById('sector-sentiment-snapshot');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const sectors = Object.keys(data.sector_sentiment);
+    if (sectors.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No sentiment data available</div>';
+        return;
+    }
+    
+    // Sort sectors by sentiment value (highest first)
+    const sortedSectors = sectors.sort((a, b) => {
+        const sentA = data.sector_sentiment[a].current_sentiment || 0;
+        const sentB = data.sector_sentiment[b].current_sentiment || 0;
+        return sentB - sentA;
+    });
+    
+    // Create a table visualization
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.fontSize = '12px';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '8px';
+    
+    // Add header row
+    const headerRow = document.createElement('tr');
+    headerRow.style.borderBottom = '2px solid var(--border)';
+    
+    const header1 = document.createElement('th');
+    header1.textContent = 'Sector';
+    header1.style.padding = '8px 4px';
+    header1.style.textAlign = 'left';
+    header1.style.fontWeight = '600';
+    header1.style.color = 'var(--text-secondary)';
+    header1.style.fontSize = '11px';
+    header1.style.textTransform = 'uppercase';
+    
+    const header2 = document.createElement('th');
+    header2.textContent = 'Sentiment';
+    header2.style.padding = '8px 4px';
+    header2.style.textAlign = 'right';
+    header2.style.fontWeight = '600';
+    header2.style.color = 'var(--text-secondary)';
+    header2.style.fontSize = '11px';
+    header2.style.textTransform = 'uppercase';
+    
+    headerRow.appendChild(header1);
+    headerRow.appendChild(header2);
+    table.appendChild(headerRow);
+    
+    sortedSectors.forEach(sector => {
+        const sentiment = data.sector_sentiment[sector];
+        const currentSentiment = sentiment.current_sentiment || 0;
+        
+        // Determine color and label
+        let color, label;
+        if (currentSentiment > 0.2) {
+            color = '#22c55e'; // Green
+            label = 'Positive';
+        } else if (currentSentiment < -0.2) {
+            color = '#ef4444'; // Red
+            label = 'Negative';
+        } else {
+            color = '#9ca3af'; // Grey
+            label = 'Neutral';
+        }
+        
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border)';
+        
+        const sectorCell = document.createElement('td');
+        sectorCell.textContent = sector;
+        sectorCell.style.padding = '6px 4px';
+        sectorCell.style.fontWeight = '500';
+        sectorCell.style.color = 'var(--text-primary)';
+        
+        const valueCell = document.createElement('td');
+        valueCell.style.padding = '6px 4px';
+        valueCell.style.textAlign = 'right';
+        
+        const valueSpan = document.createElement('span');
+        valueSpan.textContent = label;
+        valueSpan.style.color = color;
+        valueSpan.style.fontWeight = '600';
+        valueSpan.style.fontSize = '11px';
+        
+        valueCell.appendChild(valueSpan);
+        
+        row.appendChild(sectorCell);
+        row.appendChild(valueCell);
+        table.appendChild(row);
+    });
+    
+    container.appendChild(table);
+}
+
+function showSentimentError(message) {
+    const container = document.getElementById('sector-sentiment-snapshot');
+    if (container) {
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-secondary);">${message}</div>`;
+    }
+}
+
+// Fetch Market Risk Radar (Volatility Snapshot)
+function fetchMarketRiskRadar() {
+    fetch('/api/market_volatility_snapshot')
+        .then(response => response.json())
         .then(data => {
-            updateCongressTradesTable(data.trades || []);
+            console.log('Market risk radar data:', data);
+            if (data.status === 'success') {
+                renderMarketRiskRadar(data);
+                const now = new Date();
+                document.getElementById('volatility-last-updated').textContent = 
+                    `Last updated: ${now.toLocaleString()}`;
+                console.log('Rendered Market Risk Radar successfully');
+            } else {
+                showVolatilityError('Data unavailable. Try again later.');
+            }
         })
-        .catch(err => {
-            console.error('Error fetching congress trades:', err);
+        .catch(error => {
+            console.error('Error fetching market risk radar:', error);
+            showVolatilityError('Data unavailable. Try again later.');
         });
 }
 
-// Update insider trades table
-// Insider transactions: paginated custom renderer (10 per page)
-function updateInsiderTransactionsTable(items) {
-    const tableBody = document.querySelector('#insider-transactions-table tbody');
-    const infoEl = document.getElementById('insider-info');
-    const pagerEl = document.getElementById('insider-pager');
-    const perPage = 10;
-    let page = 1;
-    const total = items.length;
-    const pages = Math.max(1, Math.ceil(total / perPage));
-
-    function draw(p) {
-        page = Math.max(1, Math.min(p, pages));
-        tableBody.innerHTML = '';
-        const start = (page - 1) * perPage;
-        const end = Math.min(total, start + perPage);
-        for (let i = start; i < end; i++) {
-            const t = items[i];
-            const row = document.createElement('tr');
-            const date = document.createElement('td'); date.textContent = t.filedAt || t.date || '--';
-            const ticker = document.createElement('td'); ticker.textContent = (t.ticker || t.symbol || '--').replace('.NS','');
-            const action = document.createElement('td');
-            const badge = document.createElement('span'); badge.className = 'badge ' + ((t.action||t.side||'Sell').toLowerCase().includes('buy') ? 'buy' : 'sell'); badge.textContent = (t.action||t.side||'Sell');
-            action.appendChild(badge);
-            const shares = document.createElement('td'); shares.textContent = t.shares || t.volume || '--';
-            const amount = document.createElement('td'); amount.textContent = t.amount || '--';
-            row.appendChild(date); row.appendChild(ticker); row.appendChild(action); row.appendChild(shares); row.appendChild(amount);
-            tableBody.appendChild(row);
-        }
-        infoEl.textContent = `Showing ${start+1} to ${end} of ${total} entries`;
-        renderPager(pagerEl, page, pages, draw);
+// Render Market Risk Radar with Gauge Chart
+function renderMarketRiskRadar(data) {
+    const container = document.getElementById('market-risk-radar');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    container.style.width = '100%';
+    container.style.height = '300px';
+    container.style.minHeight = '300px';
+    container.style.display = 'block';
+    
+    const volatility = data.annualized_volatility || 0;
+    const volatilityPercent = (volatility * 100);
+    
+    // Determine risk level and color
+    let riskLevel, color, icon;
+    if (volatility < 0.10) {
+        riskLevel = 'Low';
+        color = '#22c55e'; // Green
+        icon = '✔';
+    } else if (volatility < 0.20) {
+        riskLevel = 'Moderate';
+        color = '#f59e0b'; // Yellow
+        icon = '⚠';
+    } else {
+        riskLevel = 'High';
+        color = '#ef4444'; // Red
+        icon = '🔥';
     }
-    draw(1);
+    
+    // Create full circle gauge using pie chart with custom styling
+    const maxValue = 30;
+    const filledPercent = Math.min(volatilityPercent, maxValue);
+    const remainingPercent = maxValue - filledPercent;
+    
+    // Determine zone colors for background
+    let zoneColor = 'rgba(34, 197, 94, 0.15)'; // Green
+    if (volatilityPercent >= 20) {
+        zoneColor = 'rgba(239, 68, 68, 0.15)'; // Red
+    } else if (volatilityPercent >= 10) {
+        zoneColor = 'rgba(245, 158, 11, 0.15)'; // Yellow
+    }
+    
+    // Create pie chart data for full circle gauge
+    const pieData = [{
+        type: "pie",
+        values: [filledPercent, remainingPercent],
+        labels: ['', ''],
+        hole: 0.75,
+        marker: {
+            colors: [color, 'transparent'],
+            line: { width: 0 }
+        },
+        textinfo: 'none',
+        hoverinfo: 'none',
+        rotation: -90,
+        direction: 'clockwise',
+        sort: false
+    }];
+    
+    const pieLayout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { color: 'var(--text-primary)' },
+        margin: { t: 0, b: 0, l: 0, r: 0 },
+        height: 300,
+        width: 300,
+        showlegend: false,
+        annotations: [{
+            text: `<b style="font-size:36px;color:${color};font-weight:800;">${volatilityPercent.toFixed(2)}%</b><br><span style="font-size:14px;color:var(--text-secondary);font-weight:500;">${riskLevel} ${icon}</span>`,
+            showarrow: false,
+            font: { size: 16 },
+            x: 0.5,
+            y: 0.5,
+            xref: 'paper',
+            yref: 'paper',
+            align: 'center'
+        }]
+    };
+    
+    const pieConfig = {
+        responsive: true,
+        displayModeBar: false,
+        autosize: true
+    };
+    
+    Plotly.newPlot(container, pieData, pieLayout, pieConfig);
+    
+    // Make the entire container clickable
+    container.style.cursor = 'pointer';
+    container.title = 'Click to view top 5 most/least volatile stocks';
+    
+    // Add click handler to container
+    container.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = '/volatility_ranking';
+    });
+    
+    // Store reference for resize handler
+    container.data = pieData;
+    container.layout = pieLayout;
+    
+    setTimeout(() => {
+        Plotly.Plots.resize(container);
+    }, 100);
 }
 
-// Congress trades paginated renderer
-function updateCongressTradesTable(items) {
-    const tableBody = document.querySelector('#congress-trades-table tbody');
-    const infoEl = document.getElementById('congress-info');
-    const pagerEl = document.getElementById('congress-pager');
-    const perPage = 10;
-    let page = 1;
-    const total = items.length;
-    const pages = Math.max(1, Math.ceil(total / perPage));
-
-    function draw(p) {
-        page = Math.max(1, Math.min(p, pages));
-        tableBody.innerHTML = '';
-        const start = (page - 1) * perPage;
-        const end = Math.min(total, start + perPage);
-        for (let i = start; i < end; i++) {
-            const t = items[i];
-            const row = document.createElement('tr');
-            const date = document.createElement('td'); date.textContent = t.date || '--';
-            const sym = document.createElement('td'); sym.textContent = (t.symbol||t.ticker||'--').replace('.NS','');
-            const amount = document.createElement('td'); amount.textContent = t.amount || '--';
-            const rep = document.createElement('td'); rep.textContent = t.representative || t.rep || '--';
-            row.appendChild(date); row.appendChild(sym); row.appendChild(amount); row.appendChild(rep);
-            tableBody.appendChild(row);
-        }
-        infoEl.textContent = `Showing ${start+1} to ${end} of ${total} entries`;
-        renderPager(pagerEl, page, pages, draw);
+function showVolatilityError(message) {
+    const container = document.getElementById('market-risk-radar');
+    if (container) {
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-secondary);">${message}</div>`;
     }
-    draw(1);
 }
 
 // small pager utility
